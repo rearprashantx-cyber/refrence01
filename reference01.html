@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>The Glass Box | pop‑art energy + blur & smooth</title>
+    <!-- Google Fonts: Poppins + Inconsolata -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@500;700;800&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- GSAP for advanced animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: 'Inconsolata', monospace;
+            color: #1d1d1d;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .chunky {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 700px) {
+            h2 { font-size: 3.5rem; }
+        }
+
+        :root {
+            --pop: #FF5E4A;    /* vibrant coral */
+            --pop-dark: #e04a38;
+            --white: #ffffff;
+            --black: #1a1a1a;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ----- blur + reveal animation (used on sections) ----- */
+        .reveal-blur {
+            opacity: 0;
+            filter: blur(15px);
+            transform: scale(0.95);
+            transition: opacity 1s cubic-bezier(0.5, 0, 0, 1), filter 1s cubic-bezier(0.5, 0, 0, 1), transform 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal-blur.revealed {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1);
+        }
+
+        /* glass header with blur */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-bottom: 2px solid var(--pop);
+        }
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 2rem;
+            color: var(--black);
+        }
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--black);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            transition: 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--pop);
+            text-shadow: 0 0 8px var(--pop);
+        }
+        .header-icon {
+            background: var(--black);
+            color: white;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .header-icon:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 0 rgba(0,0,0,0.1);
+        }
+
+        /* hero (no reveal needed – appears immediately) */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: var(--white);
+            padding-top: 100px;
+        }
+        .hero-bg-curve {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 70%;
+            height: 100%;
+            background: var(--pop);
+            clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+            z-index: 0;
+            filter: blur(0px); /* no blur here */
+            transition: filter 0.5s;
+        }
+        .hero:hover .hero-bg-curve {
+            filter: blur(2px); /* subtle interactive blur */
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .hero-text h1 {
+            font-size: 6rem;
+            line-height: 0.95;
+            color: var(--black);
+            margin-bottom: 1rem;
+        }
+        .hero-text h1 span {
+            background: var(--pop);
+            color: white;
+            padding: 0 0.5rem;
+            display: inline-block;
+        }
+        .hero-cta {
+            background: var(--pop);
+            border: none;
+            padding: 1.5rem 4rem;
+            border-radius: 100px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 20px 0 #b33e2e, 0 10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: 0.15s ease;
+            margin-top: 2rem;
+            border: 3px solid var(--black);
+        }
+        .hero-cta:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 28px 0 #b33e2e, 0 15px 25px rgba(0,0,0,0.25);
+        }
+        .sticker-img {
+            width: 100%;
+            max-width: 550px;
+            border: 8px solid white;
+            border-radius: 80px;
+            box-shadow: 20px 30px 0 var(--black), 0 30px 30px rgba(0,0,0,0.3);
+            transform: rotate(4deg);
+            transition: 0.3s;
+        }
+        .sticker-img:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        /* craving section (reveal-blur applied) */
+        .craving {
+            background: var(--pop);
+            padding: 6rem 0;
+            position: relative;
+            margin-top: -4rem;
+            clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+        }
+        .craving h2 {
+            color: white;
+            text-align: center;
+            font-size: 6rem;
+            text-shadow: 8px 8px 0 var(--black);
+            margin-bottom: 4rem;
+        }
+        .float-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem 5rem;
+        }
+        .float-item {
+            width: 220px;
+            filter: drop-shadow(12px 20px 0 rgba(0,0,0,0.2));
+            transition: 0.2s;
+        }
+        .float-item img {
+            width: 100%;
+            border: 6px solid white;
+            border-radius: 50px;
+            background: white;
+            box-shadow: 0 20px 0 var(--black), 0 30px 20px rgba(0,0,0,0.15);
+            transform: rotate(var(--rot, -5deg));
+        }
+        .float-item:nth-child(2) { --rot: 3deg; }
+        .float-item:nth-child(3) { --rot: -8deg; }
+        .float-item:nth-child(4) { --rot: 6deg; }
+
+        /* orbital section */
+        .orbital-section {
+            padding: 8rem 0 12rem;
+            background: white;
+            position: relative;
+        }
+        .orbital-head {
+            font-size: 5rem;
+            color: var(--black);
+            max-width: 800px;
+            line-height: 1;
+        }
+        .orbital-container {
+            position: relative;
+            min-height: 600px;
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dotted-semicircle {
+            position: absolute;
+            width: 700px;
+            height: 350px;
+            border: 4px dotted var(--pop);
+            border-radius: 700px 700px 0 0;
+            border-bottom: none;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            filter: drop-shadow(0 0 8px rgba(255,94,74,0.6));
+        }
+        .orbit-items {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+        .orbit-dish {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid white;
+            box-shadow: 0 15px 0 var(--black), 0 20px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: 0.2s;
+            overflow: hidden;
+            background: white;
+            transform: translate(-50%, -50%);
+        }
+        .orbit-dish img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .orbit-dish:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 20px 0 var(--pop-dark), 0 25px 25px black;
+            filter: blur(0.5px); /* micro blur on hover */
+        }
+        .orbit-dish.pos1 { left: 30%; top: 20%; }
+        .orbit-dish.pos2 { left: 45%; top: 5%; }
+        .orbit-dish.pos3 { left: 60%; top: 5%; }
+        .orbit-dish.pos4 { left: 75%; top: 20%; }
+
+        .center-stage {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -30%);
+            width: 350px;
+            text-align: center;
+            z-index: 10;
+        }
+        .center-stage .large-img {
+            width: 100%;
+            border: 10px solid white;
+            border-radius: 70px;
+            box-shadow: 25px 30px 0 var(--pop), 0 30px 30px black;
+            transition: 0.3s;
+        }
+        .center-stage h3 {
+            font-size: 2.5rem;
+            background: var(--pop);
+            display: inline-block;
+            padding: 0.5rem 2rem;
+            border-radius: 60px;
+            color: white;
+            margin-top: 1.5rem;
+            border: 3px solid black;
+        }
+
+        /* reviews with bubble */
+        .reviews-section {
+            background: var(--pop);
+            padding: 6rem 0;
+            clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%);
+        }
+        .review-bubbles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3rem;
+            justify-content: center;
+            margin-top: 4rem;
+        }
+        .bubble {
+            background: white;
+            border-radius: 60px 60px 60px 20px;
+            padding: 2rem 2rem 2.5rem;
+            max-width: 350px;
+            border: 5px solid black;
+            box-shadow: 15px 15px 0 black;
+            position: relative;
+            transition: 0.3s;
+        }
+        .bubble:hover {
+            filter: blur(0.8px); /* subtle blur on hover */
+            transform: scale(0.99);
+        }
+        .bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 30px solid white;
+            filter: drop-shadow(5px 8px 0 black);
+        }
+        .bubble .stars {
+            color: gold;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .guest-photo img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid black;
+        }
+
+        /* footer */
+        footer {
+            background: var(--pop);
+            padding: 4rem 0 3rem;
+            color: black;
+        }
+        .footer-big {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 5rem;
+            line-height: 1;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+        .footer-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .social-icons i {
+            font-size: 3rem;
+            margin-right: 2rem;
+            color: black;
+            transition: 0.2s;
+        }
+        .social-icons i:hover {
+            transform: scale(1.2) rotate(5deg);
+            color: white;
+            filter: blur(0.3px);
+        }
+
+        /* responsive */
+        @media (max-width: 900px) {
+            .hero-text h1 { font-size: 4rem; }
+            .hero-cta { font-size: 1.5rem; padding: 1rem 2rem; }
+            .dotted-semicircle { width: 500px; height: 250px; }
+            .orbit-dish { width: 80px; height: 80px; }
+            .center-stage { width: 250px; }
+            .footer-big { font-size: 3rem; }
+        }
+        @media (max-width: 600px) {
+            .nav-links { display: none; }
+            .hero-bg-curve { width: 100%; clip-path: polygon(0 40%, 100% 0, 100% 100%, 0 100%); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- fixed glass header -->
+<header>
+    <div class="logo"><i class="fas fa-crown" style="color: var(--pop);"></i> GLASS BOX</div>
+    <div class="nav-links">
+        <a href="#menu">MENU</a>
+        <a href="#vibe">VIBE</a>
+        <a href="#location">LOCATION</a>
+    </div>
+    <div class="header-icon"><i class="fas fa-lock"></i></div>
+</header>
+
+<!-- hero (no reveal needed, but we add anchor) -->
+<section class="hero" id="home">
+    <div class="hero-bg-curve"></div>
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h1>DELICIOUS<br>VIBES.<br><span>QUENCH</span> YOUR HUNGER</h1>
+            <button class="hero-cta" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'});">ORDER NOW</button>
+        </div>
+        <div class="hero-sticker">
+            <img class="sticker-img" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&auto=format" alt="Lasagna pizza sticker">
+        </div>
+    </div>
+</section>
+
+<!-- craving section (with reveal-blur) -->
+<section class="craving reveal-blur" id="vibe">
+    <div class="container">
+        <h2>DIP, CRUNCH, SMILE</h2>
+        <div class="float-grid">
+            <div class="float-item"><img src="https://images.unsplash.com/photo-1586190848861-99aa5a1712c0?w=400&auto=format" alt="fries"></div>
+            <div class="float-item"><img src="https://images.unsplash.com/photo-1541529086526-db283c563270?w=400&auto=format" alt="wings"></div>
+            <div class="float-item"><img src="https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=400&auto=format" alt="pizza"></div>
+            <div class="float-item"><img src="https://images.unsplash.com/photo-1589305465617-12c7d5a6a8c7?w=400&auto=format" alt="shake"></div>
+        </div>
+    </div>
+</section>
+
+<!-- orbital menu (with reveal-blur) -->
+<section class="orbital-section reveal-blur" id="menu">
+    <div class="container">
+        <h2 class="orbital-head">⚡ ORBITAL<br>TASTE LAB</h2>
+        <div class="orbital-container">
+            <div class="dotted-semicircle"></div>
+            <div class="orbit-items">
+                <div class="orbit-dish pos1" data-dish="lasagna" data-img="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&auto=format" data-name="LASAGNA PIZZA">
+                    <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&auto=format" alt="lasagna">
+                </div>
+                <div class="orbit-dish pos2" data-dish="paneer" data-img="https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=600&auto=format" data-name="FISH TIKKA">
+                    <img src="https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=200&auto=format" alt="tikka">
+                </div>
+                <div class="orbit-dish pos3" data-dish="shake" data-img="https://images.unsplash.com/photo-1626200419658-8c417e89e7dc?w=600&auto=format" data-name="POPCORN SHAKE">
+                    <img src="https://images.unsplash.com/photo-1626200419658-8c417e89e7dc?w=200&auto=format" alt="shake">
+                </div>
+                <div class="orbit-dish pos4" data-dish="grill" data-img="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format" data-name="MOROCCAN GRILL">
+                    <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&auto=format" alt="grill">
+                </div>
+            </div>
+            <div class="center-stage" id="centerStage">
+                <img id="largeDishImg" class="large-img" src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&auto=format" alt="selected dish">
+                <h3 id="dishName">LASAGNA PIZZA</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- reviews (reveal-blur) -->
+<section class="reviews-section reveal-blur">
+    <div class="container">
+        <h2 style="color: white; text-shadow: 6px 6px 0 black;">4.4 ★ 2,450+ REVIEWS</h2>
+        <div class="review-bubbles">
+            <div class="bubble">
+                <div class="stars">★★★★★</div>
+                <p>"Vibes as good as tier-1 cities like Bangalore... absolute fire!"</p>
+                <div class="guest-photo">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format" alt="guest">
+                    <span>Ananya S.</span>
+                </div>
+            </div>
+            <div class="bubble">
+                <div class="stars">★★★★★</div>
+                <p>"The food was amazing and the restaurant view is so aesthetic ✨"</p>
+                <div class="guest-photo">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format" alt="guest">
+                    <span>Rohit M.</span>
+                </div>
+            </div>
+            <div class="bubble">
+                <div class="stars">★★★★☆</div>
+                <p>"Best fine dining in Patna. The glass architecture is breathtaking."</p>
+                <div class="guest-photo">
+                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format" alt="guest">
+                    <span>Priya K.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- footer (reveal-blur) -->
+<footer class="reveal-blur" id="location">
+    <div class="container">
+        <div class="footer-big">FIND US IN<br>KANKARBAGH, PATNA</div>
+        <div class="footer-info">
+            <div><i class="fas fa-map-pin"></i> near Dinkar Golambar, 800020</div>
+            <div><i class="fas fa-phone-alt"></i> 090655 96966</div>
+            <div class="social-icons">
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-facebook"></i>
+                <i class="fab fa-swiggy"></i>
+                <i class="fab fa-zomato"></i>
+            </div>
+        </div>
+        <div style="margin-top: 4rem; font-size: 1.2rem; font-weight: bold;">OPEN 12 PM – 11:30 PM</div>
+    </div>
+</footer>
+
+<!-- scripts for blur reveal and orbital + smooth extra -->
+<script>
+    (function() {
+        // register ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // reveal-blur using Intersection Observer (simpler, works without gsap)
+        const revealElements = document.querySelectorAll('.reveal-blur');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                } else {
+                    // optional: remove class to repeat animation? we keep it visible after first
+                    // entry.target.classList.remove('revealed');
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        revealElements.forEach(el => observer.observe(el));
+
+        // also pre-reveal if already in view
+        window.addEventListener('load', () => {
+            revealElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 100) {
+                    el.classList.add('revealed');
+                }
+            });
+        });
+
+        // orbital menu click
+        const centerImg = document.getElementById('largeDishImg');
+        const dishName = document.getElementById('dishName');
+        const orbitDishes = document.querySelectorAll('.orbit-dish');
+
+        orbitDishes.forEach(dish => {
+            dish.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const newImgSrc = this.dataset.img;
+                const newName = this.dataset.name;
+
+                gsap.to(centerImg, {
+                    opacity: 0,
+                    duration: 0.2,
+                    onComplete: () => {
+                        centerImg.src = newImgSrc;
+                        dishName.innerText = newName;
+                        gsap.to(centerImg, { opacity: 1, duration: 0.3 });
+                    }
+                });
+                gsap.fromTo(this,
+                    { scale: 1, boxShadow: '0 15px 0 black' },
+                    { scale: 1.3, boxShadow: '0 25px 0 var(--pop-dark)', duration: 0.2, yoyo: true, repeat: 1 }
+                );
+            });
+        });
+
+        // floating animation (already in previous, but keep)
+        gsap.to('.float-item', {
+            y: -15,
+            duration: 1.2,
+            ease: "power1.inOut",
+            stagger: 0.1,
+            repeat: -1,
+            yoyo: true
+        });
+
+        // smooth scroll for all anchor links (in case any manual)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // additional blur effect on header background? already there
+        // micro blur on hero curve when mouse move? optional but we already have hover
+    })();
+</script>
+
+<!-- ensure that all images are lazy and have blur placeholder? not needed but we can add lowres bg later -->
+</body>
+</html>
